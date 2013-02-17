@@ -1,0 +1,7 @@
+hadoop --config conf fs -mkdir input/
+hadoop --config conf fs -put query1.txt  input/
+hadoop --config conf fs -rmr output/
+hadoop --config	conf jar ngram.jar Ngram input/ output/ 
+rm -rf output/
+hadoop --config conf fs -get output .
+cat output/*
