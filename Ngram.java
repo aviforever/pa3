@@ -8,17 +8,32 @@
 	import org.apache.hadoop.util.*;
 	
 	public class Ngram {
+
+	    private static int GRAM;
 	
 	    public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
 	      private final static IntWritable one = new IntWritable(1);
-	      private Text word = new Text();
+	      private Text title = new Text();
+	      private Text[] words = new Text[GRAM];
 	
 	      public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+
+		for(int i=0; i<GRAM; i++){
+		  words[i] = new Text();	
+		}
+
 	        String line = value.toString();
 	        StringTokenizer tokenizer = new StringTokenizer(line);
 	        while (tokenizer.hasMoreTokens()) {
-	          word.set(tokenizer.nextToken());
-	          output.collect(word, one);
+		  for (int i=0; i<GRAM-1; i++){
+			words[i] = words[i+1];	 // left shift
+		  }
+	          words[GRAM-1].set(tokenizer.nextToken());
+
+	          // Temp hack . Fixme. 
+		  title.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
+
+	          output.collect(title, one);
 	        }
 	      }
 	    }
@@ -34,6 +49,9 @@
 	    }
 	
 	    public static void main(String[] args) throws Exception {
+	      
+	      GRAM = Integer.parseInt(args[0]);
+
 	      JobConf conf = new JobConf(Ngram.class);
 	      conf.setJobName("wordcount");
 	
@@ -46,9 +64,11 @@
 	
 	      conf.setInputFormat(TextInputFormat.class);
 	      conf.setOutputFormat(TextOutputFormat.class);
-	
-	      FileInputFormat.setInputPaths(conf, new Path(args[0]));
-	      FileOutputFormat.setOutputPath(conf, new Path(args[1]));
+
+	   
+	      // Currently pointing to query file. Point to arg [2] instead. 
+	      FileInputFormat.setInputPaths(conf, new Path(args[2]));
+	      FileOutputFormat.setOutputPath(conf, new Path(args[3]));
 	
 	      JobClient.runJob(conf);
 	    }
