@@ -15,11 +15,13 @@
 	
 	    public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
 	      private final static IntWritable one = new IntWritable(1);
-	      private Text title = new Text();
+	      private Text titleX = new Text();
+	      private StringBuilder title = new StringBuilder();
+	      private Text word = new Text();
 	      private Text[] words = new Text[GRAM];
 
 	      private Path[] QueryFile;
-	
+              private boolean isTitle = false;	
 	      public void configure(JobConf job) {
         	 // Get the cached archives/files
 	 	 try{
@@ -34,22 +36,48 @@
 	
 	      public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 
+
 		for(int i=0; i<GRAM; i++){
 		  words[i] = new Text();	
 		}
 
 	        String line = value.toString();
-	        StringTokenizer tokenizer = new StringTokenizer(line);
-	        while (tokenizer.hasMoreTokens()) {
-		  for (int i=0; i<GRAM-1; i++){
-			words[i] = words[i+1];	 // left shift
-		  }
-	          words[GRAM-1].set(tokenizer.nextToken());
+		int SIZE = line.length();
 
-	          // Temp hack . Fixme. 
-		  title.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
+		if(line.indexOf("<Title>")>-1) System.out.println(line);
 
-	          output.collect(title, one);
+		if(isTitle) {
+			int i = line.indexOf("</Title>");
+			if(i > -1) {
+				title.append(line.substring(0,i));
+				isTitle = false;  // Found end of title
+				titleX.set(title.toString());
+	        	        output.collect(titleX, one);
+			} else {
+				title.append(line);
+			}
+		} else {
+			int i = line.indexOf("<Title>");
+			if(i > -1) {
+				title = new StringBuilder(line.substring(i,SIZE));
+				isTitle = true;  // Found end of title
+			} else {
+			}
+		}
+		
+
+	        //StringTokenizer tokenizer = new StringTokenizer(line);
+	        Tokenizer tokenizer = new Tokenizer(line);
+	        while (tokenizer.hasNext()) {
+			  for (int i=0; i<GRAM-1; i++){
+				words[i] = words[i+1];	 // left shift
+			  }
+	         	 words[GRAM-1].set(tokenizer.next());
+
+		          // Temp hack . Fixme. 
+			  titleX.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
+
+	        	  //output.collect(titleX, one);
 	        }
 	      }
 	    }
