@@ -8,6 +8,8 @@
         import org.apache.hadoop.mapred.*;
         import org.apache.hadoop.util.*;
         import org.apache.hadoop.filecache.*;
+	import java.util.regex.Matcher;
+	import java.util.regex.Pattern;
 
 
 
@@ -16,6 +18,10 @@ class MyRecordReader implements RecordReader<Text, Text> {
   private LineRecordReader lineReader;
   private LongWritable lineKey;
   private Text lineValue;
+
+  private static final Pattern TITLE_BEGIN_END = Pattern.compile("(.*)<title>(.*)</title>(.*)");
+  private static final Pattern TITLE_BEGIN = Pattern.compile("(.*)<title>(.*)");
+  private static final Pattern TITLE_END = Pattern.compile("(.*)</title>(.*)");
 
   public MyRecordReader(Configuration job, FileSplit split) throws IOException {
     lineReader = new LineRecordReader(job, split);
@@ -29,6 +35,23 @@ class MyRecordReader implements RecordReader<Text, Text> {
     if (!lineReader.next(lineKey, lineValue)) {
       return false;
     }
+
+    Matcher m;
+
+    while (lineReader.next(lineKey, lineValue)) {
+	if((m= TITLE_BEGIN.matcher(lineValue.toString()) ).matches()){
+	     key.set(m.group(1));
+	     key.set(lineValue.toString());
+    	     value.set("Harshit's text value");
+	     return true;
+        };
+	if(lineValue.toString().indexOf("<title>") > -1){
+	     //key.set(lineValue.toString());
+    	     //value.set("Harshit's text value");
+	     //return true;
+        };
+    }
+
 
     // parse the lineValue which is in the format:
 //    // objName, x, y,

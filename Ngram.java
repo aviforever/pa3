@@ -77,8 +77,10 @@
 		          // Temp hack . Fixme. 
 			  titleX.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
 
-	        	  output.collect(titleX, one);
+	//        	  output.collect(titleX, one);
 	        }
+	        output.collect(key, one);
+		
 	      }
 	    }
 	
