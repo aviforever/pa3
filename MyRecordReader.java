@@ -18,6 +18,8 @@ class MyRecordReader implements RecordReader<Text, Text> {
   private LineRecordReader lineReader;
   private LongWritable lineKey;
   private Text lineValue;
+  private boolean isTitle;
+  private StringBuilder content;
 
   private static final Pattern TITLE_BEGIN_END = Pattern.compile("(.*)<title>(.*)</title>(.*)");
   private static final Pattern TITLE_BEGIN = Pattern.compile("(.*)<title>(.*)");
@@ -28,29 +30,73 @@ class MyRecordReader implements RecordReader<Text, Text> {
 
     lineKey = lineReader.createKey();
     lineValue = lineReader.createValue();
+    isTitle = false;
+    content = new StringBuilder();
   }
 
   public boolean next(Text key, Text value) throws IOException {
     // get the next line
-    if (!lineReader.next(lineKey, lineValue)) {
-      return false;
-    }
+//    if (!lineReader.next(lineKey, lineValue)) {
+//      return false;
+//    }
 
     Matcher m;
 
-    while (lineReader.next(lineKey, lineValue)) {
-	if((m= TITLE_BEGIN.matcher(lineValue.toString()) ).matches()){
-	     key.set(m.group(1));
-	     key.set(lineValue.toString());
-    	     value.set("Harshit's text value");
-	     return true;
-        };
-	if(lineValue.toString().indexOf("<title>") > -1){
-	     //key.set(lineValue.toString());
-    	     //value.set("Harshit's text value");
-	     //return true;
-        };
+//    if(lineValue != null) {
+//      if((m= TITLE_BEGIN_END.matcher(lineValue.toString()) ).matches()){
+//	     key.set(m.group(1));
+//	     
+//      }else {
+//    	while (lineReader.next(lineKey, lineValue)) {
+//		if((m= TITLE_BEGIN.matcher(lineValue.toString()) ).matches()){
+//	    		 key.set(m.group(1));
+//	   	         key.set(lineValue.toString());
+//        	}
+//        }
+//      }
+//    }
+
+   
+  //  Check if No Title. 
+    if(!isTitle) {
+    	while (lineReader.next(lineKey, lineValue)) {
+		if((m= TITLE_BEGIN_END.matcher(lineValue.toString()) ).matches()){
+			isTitle = true;
+			break;
+		}
+	}	
     }
+
+    key.set(lineValue.toString());
+    content = new StringBuilder();
+    while (lineReader.next(lineKey, lineValue)) {
+	if((m= TITLE_BEGIN_END.matcher(lineValue.toString()) ).matches()){
+		value.set(content.toString());
+		return true;
+	}else{
+		content.append(lineValue.toString());
+	}
+    }	
+    	
+    if(content.toString().equals("")) {
+	return false; 
+    }
+
+    return true;
+
+//    while (lineReader.next(lineKey, lineValue)) {
+//	if((m= TITLE_BEGIN_END.matcher(lineValue.toString()) ).matches()){
+//	    // key.set(m.group(1));
+//	     key.set(lineValue.toString());
+//    	     value.set("Harshit's text value");
+//	     return true;
+//        };
+////	if(lineValue.toString().indexOf("<title>") > -1){
+////	     //key.set(lineValue.toString());
+////    	     //value.set("Harshit's text value");
+////	     //return true;
+////        };
+//    }
 
 
     // parse the lineValue which is in the format:
@@ -80,9 +126,8 @@ class MyRecordReader implements RecordReader<Text, Text> {
 
 //    System.out.println("Within Record Reader");
 
-    key.set("Harshit's text key");
-    value.set("Harshit's text value");
-    return true;
+//    key.set("Harshit's text key");
+//    value.set("Harshit's text value");
   }
 
   public Text createKey() {
