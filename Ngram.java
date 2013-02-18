@@ -9,6 +9,9 @@
 	import org.apache.hadoop.util.*;
 	import org.apache.hadoop.filecache.*;
 	
+	import java.io.FileReader;
+	import java.io.BufferedReader;
+
 	public class Ngram {
 
 	    private static int GRAM;
@@ -19,28 +22,46 @@
 	      private StringBuilder title = new StringBuilder();
 	      private Text word = new Text();
 	      private Text[] words = new Text[GRAM];
-
+	      private QueryProcessor qp; 
+	
+//	      private FileSystem fs;
 	      private Path[] QueryFile;
-              private boolean isTitle = false;	
-//	      public void configure(JobConf job) {
-//        	 // Get the cached archives/files
-//	 	 try{
-//		     //All your IO Operations
-//	             QueryFile = DistributedCache.getLocalCacheFiles(job);
-//		     System.out.println(QueryFile.toString());
-//		 }catch(IOException ioe){
-//		     //Handle exception here, most of the time you will just log it.
-//		     System.out.println("FATAL: Could not read in mapper -" +  QueryFile.toString());
-//		 }
-//	      }
+	      private StringBuilder query = new StringBuilder();
+              private BufferedReader readBuffer;
+
+	      //  Not needed. 
+	      private boolean isTitle = false;
+	      	
+	      public void configure(JobConf job) {
+        	 // Get the cached archives/files
+	 	 try{
+		     //All your IO Operations
+		  //   fs = FileSystem.getLocal(new Configuration());
+	             	QueryFile = DistributedCache.getLocalCacheFiles(job);
+   	            //fs.close();
+		 }catch(IOException ioe){
+		     //Handle exception here, most of the time you will just log it.
+		     System.out.println("FATAL: Could not read in mapper -" +  QueryFile.toString());
+		 }
+	      }
 
 	      	
 	      public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 
+	      	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
+		String str;
+		while((str = readBuffer.readLine()) != null){
+			query.append(str);			
+//	      	System.out.println("Parsing Query 1 " + str);
+		}		
+		readBuffer.close();
+		qp = new QueryProcessor(query.toString(), GRAM);
+
 	        String line = value.toString();
 		int SIZE = line.length();
 	        int i = 0, j = 0, k, l;
-	         output.collect(key, one);
+
+//	         output.collect(key, one);
 
 	//	if(line.indexOf("<Title>")>-1) System.out.println(line);
 
