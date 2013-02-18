@@ -3,7 +3,7 @@ hadoop --config conf fs -mkdir input/
 hadoop --config conf fs -put chunk_aa input/
 hadoop --config conf fs -put query*.txt .
 hadoop --config conf fs -rmr output/
-hadoop --config	conf jar ngram.jar Ngram 4 query1 input/ output/ 
+hadoop --config	conf jar ngram.jar Ngram 4 query1.txt input/ output/ 
 rm -rf output/
 hadoop --config conf fs -get output .
 cat output/*
