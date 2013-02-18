@@ -13,7 +13,7 @@
 
 	    private static int GRAM;
 	
-	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, IntWritable> {
+	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, NgramPerPage> {
 	      private final static IntWritable one = new IntWritable(1);
 	      private Text titleX = new Text();
 	      private StringBuilder title = new StringBuilder();
@@ -34,20 +34,15 @@
 		 }
 	      }
 	
-	      public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-
-
-		for(int i=0; i<GRAM; i++){
-		  words[i] = new Text();	
-		}
-
+	      public void map(Text key, Text value, OutputCollector<Text, NgramPerPage> output, Reporter reporter) throws IOException {
 	        String line = value.toString();
 		int SIZE = line.length();
+	        int i = 0, j = 0, k, l;
 
 	//	if(line.indexOf("<Title>")>-1) System.out.println(line);
 
 		if(isTitle) {
-			int i = line.indexOf("</Title>");
+			i = line.indexOf("</Title>");
 			if(i > -1) {
 				title.append(line.substring(0,i));
 				isTitle = false;  // Found end of title
@@ -57,40 +52,91 @@
 				title.append(line);
 			}
 		} else {
-			int i = line.indexOf("<Title>");
+			i = line.indexOf("<Title>");
 			if(i > -1) {
 				title = new StringBuilder(line.substring(i,SIZE));
 				isTitle = true;  // Found end of title
 			} else {
 			}
 		}
-		
 
-	        //StringTokenizer tokenizer = new StringTokenizer(line);
+
+
+	        String lineInPage = value.toString();
 	        Tokenizer tokenizer = new Tokenizer(line);
-	        while (tokenizer.hasNext()) {
-			  for (int i=0; i<GRAM-1; i++){
-				words[i] = words[i+1];	 // left shift
-			  }
-	         	 words[GRAM-1].set(tokenizer.next());
 
-		          // Temp hack . Fixme. 
-			  titleX.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
+		for(i=0; i<GRAM && tokenizer.hasNext(); i++){
+		  words[i] = new Text();	
+		  words[i].set(tokenizer.next());
+		}
 
-	//        	  output.collect(titleX, one);
-	        }
-	        output.collect(key, one);
-		
+		if (i < GRAM) {
+		    
+		}
+		else if ( i == GRAM && (tokenizer.hasNext() == false)) {
+		    StringBuilder nGram = new StringBuilder();
+		    i = 0;
+		    nGram.append(words[i]);
+		    for (i = 1; i < GRAM; i++) {
+			nGram.append(" " + words[i]);
+		    }
+
+		    // if this ngram present in query string
+                    //if (queryString.contains(nGram.toString())
+		    output.collect(key, new NgramPerPage(nGram.toString(), one));
+		}
+		else {
+		    j = 0;
+		    while (tokenizer.hasNext()) {
+			StringBuilder nGram = new StringBuilder();
+			//if ((i+1) == GRAM) {
+			k = j;
+			nGram.append(words[k]);
+			for (l = 1; l < GRAM; l++) {
+			    k = (k + 1) % GRAM ;
+			    nGram.append(" " + words[k]);
+			}
+                        j = (j + 1) % GRAM;
+			i = (i + 1) % GRAM;
+                        // if this ngram present in query string
+                        //if (queryString.contains(nGram.toString())
+			output.collect(key, new NgramPerPage(nGram.toString(), one));
+			words[i++].set(tokenizer.next());
+		    }
+		}
+
 	      }
 	    }
-	
-	    public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
-	      public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+	    /*
+	    public static class Combine {
+	    //extends MapReduceBase implements Combiner<Text, NgramPerPage, Text, IntWritable> {
+		public void Combine(String key, Iterator<NgramPerPage>
+				    values, OutputCollector<Text,
+				    IntWritable> output, Reporter
+				    reporter) {
+		    int sum = 0;
+		    StringBuilder nGram = new StringBuilder();
+		    while (values.hasNext()) {
+			sum += values.next.getCount();
+			//if (first == true) {
+			//    first = false;
+			//    nGram.append(values.next.nGram);
+			//}
+		    }
+		    //if (first == false)
+		    output.collect(key, sum);
+		}
+	    }
+	    */
+	    public static class Reduce extends MapReduceBase implements Reducer<Text, NgramPerPage, Text, IntWritable> {
+	      public void reduce(Text key, Iterator<NgramPerPage> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 	        int sum = 0;
-	        while (values.hasNext()) {
-	          sum += values.next().get();
-	        }
-	        output.collect(key, new IntWritable(sum));
+		
+                // TODO find biggest number of the iterator
+		//	        while (values.hasNext()) {
+		//sum += values.next().count;
+	        //}
+		// output.collect(key, new IntWritable(sum));
 	      }
 	    }
 	
@@ -102,10 +148,10 @@
 	      conf.setJobName("wordcount");
 	
 	      conf.setOutputKeyClass(Text.class);
-	      conf.setOutputValueClass(IntWritable.class);
+	      conf.setOutputValueClass(NgramPerPage.class);
 	
 	      conf.setMapperClass(Map.class);
-	      conf.setCombinerClass(Reduce.class);
+	      //	      conf.setCombinerClass(Combine.class);
 	      conf.setReducerClass(Reduce.class);
 	
 	      conf.setInputFormat(MyInputFormat.class);
