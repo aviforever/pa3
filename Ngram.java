@@ -13,7 +13,7 @@
 
 	    private static int GRAM;
 	
-	    public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
+	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, IntWritable> {
 	      private final static IntWritable one = new IntWritable(1);
 	      private Text titleX = new Text();
 	      private StringBuilder title = new StringBuilder();
@@ -34,7 +34,7 @@
 		 }
 	      }
 	
-	      public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+	      public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 
 
 		for(int i=0; i<GRAM; i++){
@@ -44,7 +44,7 @@
 	        String line = value.toString();
 		int SIZE = line.length();
 
-		if(line.indexOf("<Title>")>-1) System.out.println(line);
+	//	if(line.indexOf("<Title>")>-1) System.out.println(line);
 
 		if(isTitle) {
 			int i = line.indexOf("</Title>");
@@ -52,7 +52,7 @@
 				title.append(line.substring(0,i));
 				isTitle = false;  // Found end of title
 				titleX.set(title.toString());
-	        	        output.collect(titleX, one);
+	        	  //      output.collect(titleX, one);
 			} else {
 				title.append(line);
 			}
@@ -77,7 +77,7 @@
 		          // Temp hack . Fixme. 
 			  titleX.set(words[0].toString() + " " + words[1].toString() + " " + words[2].toString());
 
-	        	  //output.collect(titleX, one);
+	        	  output.collect(titleX, one);
 	        }
 	      }
 	    }
@@ -106,7 +106,7 @@
 	      conf.setCombinerClass(Reduce.class);
 	      conf.setReducerClass(Reduce.class);
 	
-	      conf.setInputFormat(TextInputFormat.class);
+	      conf.setInputFormat(MyInputFormat.class);
 	      conf.setOutputFormat(TextOutputFormat.class);
 
 	      // This is the Query File passed to Mapper. 
