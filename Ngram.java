@@ -15,6 +15,7 @@
 	public class Ngram {
 
 	    private static int GRAM;
+	    static AvlTree   tree = new AvlTree();
 	
 	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, IntWritable> {
 	      private final static IntWritable one = new IntWritable(1);
@@ -178,12 +179,14 @@
 
 	    public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 	      public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-	        int sum = 0;
-		
+
 		if (values.hasNext()) {
-		    sum = values.next().get();
-		    output.collect(key, new IntWritable(sum));
-	        }
+                    tree.add(values.next().get(), key);
+		}
+		Node node = tree.findMax();
+		System.out.println(node.page.toString()+ "score:="+node.value);
+		output.collect(node.page, new IntWritable(node.value));
+
 	      }
 	    }
 	
@@ -201,6 +204,7 @@
 	      conf.setMapperClass(Map.class);
 	      conf.setCombinerClass(Combine.class);
 	      conf.setReducerClass(Reduce.class);
+	      conf.setNumReduceTasks(1);
 	
 	      conf.setInputFormat(MyInputFormat.class);
 	      conf.setOutputFormat(TextOutputFormat.class);

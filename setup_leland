@@ -1,4 +1,4 @@
 source local-hadoop/env-local-hadoop.tcsh
 mkdir -p class_dir
-javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java NgramPerPage.java QueryProcessor.java NgramPiece.java
+javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java QueryProcessor.java NgramPiece.java AvlTree.java Node.java
 jar -cvf ngram.jar -C class_dir/ .

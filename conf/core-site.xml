@@ -6,6 +6,6 @@
 <configuration>
   <property>
     <name>fs.default.name</name>
-    <value>hdfs://myth14:32206</value>
+    <value>hdfs://myth14:23308</value>
   </property>
 </configuration>

@@ -1,0 +1,326 @@
+
+import java.io.IOException;
+import java.util.*;
+import java.net.URI;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.*;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.util.*;
+import org.apache.hadoop.filecache.*;
+
+
+
+
+public class AVL {
+
+    Node root;
+    
+    AVL () {
+	root = null;
+    }
+
+    public class Node {
+    
+
+    private Node left, right, parent;
+    
+    /**
+     * The value of this node.
+     */
+    private final IntWritable value;
+    private final Text page;
+    
+    /**
+     * The balance and height of this node.
+     */
+    private int balance, height = 1;
+    Node(IntWritable val, Text page) {
+	this.value = val;
+	this.page = new Text();
+	this.page.set(page);
+    }
+    
+    /**
+     * Sets this node's left child.
+     * @param left The new left child.
+     */
+    private void setLeft(Node left) {
+	
+	this.left = left;
+	if(left != null)
+	    left.parent = this;
+	
+    }
+    
+    /**
+     * Sets this node's right child.
+     * @param right The right child.
+     */
+    private void setRight(Node right) {
+	
+	this.right = right;
+	if(right != null)
+	    right.parent = this;
+	
+    }
+    
+    /**
+     * Sets this node as root.
+     */
+    private void setRoot() {
+	    
+	    AVL.this.root = this;
+	    parent = null;
+	    
+    }
+
+
+    private void replace(Node old, Node rep) {
+	
+	if(left == old)
+	    setLeft(rep);
+	
+	else if(right == old)
+	    setRight(rep);
+	
+	else
+	    throw new IllegalArgumentException("Cannot replace node because node is no son.");
+	
+    }
+    
+    /**
+     * Updates this node's height and balance values.
+     */
+    private void update() {
+	
+	int[] sonHeight = sonHeight();
+	
+	balance = sonHeight[0] - sonHeight[1];
+	height = Math.max(sonHeight[0], sonHeight[1]) + 1;
+	
+    }
+    
+    /**
+     * Computes an array containing the heights of both sons.
+     * (0: left son, 1: right son)
+     * @return The heights of the sons as an array.
+     */
+    private int[] sonHeight() {
+	
+	return new int[] {
+	    right == null ? 0 : right.height,
+	    left == null ? 0 : left.height
+	};
+	
+    }
+}
+
+    /**
+     * Walks up from the most recent deleted item to the tree root in
+    order to
+    * inform all entities 
+    * @param a The current node that has to be revalidated after a tree
+    * alteration.
+    */
+    private void up(Node a) {
+	
+	Node next = a.parent;
+	int orgHeigth = a.height;
+	
+	System.out.println("Validating element:" +a.value+ "(balance/height:" +a.balance + a.height);
+	a.update();
+	System.out.println("bal :" + a.balance + "height"+ a.height);
+	
+	// Check if tree node is out of balance.
+	if(Math.abs(a.balance) >= 2)
+	    a = rotate(a);
+	
+	// Update parent nodes only if the tree root was not yet reached
+	// and if the height of the current node was altered.
+	if(next != null && orgHeigth != a.height)
+	    up(next);
+	
+    }
+
+    /**
+     * Adds a new value to this tree.
+     * @param val The new value.
+     */
+    public void add(IntWritable val, Text page) {
+	
+	System.out.println("Adding element:"+ val);
+	
+	// No root yet exists -> Insert as root and return.
+	if(this.root == null) {
+	    this.root = new Node(val, page);
+	    this.root.parent = null;
+	    System.out.println(" -> Setting as root.");
+	    return;
+	}
+	
+	// Find right path for insertion.
+	Node c = root;
+	while(true) {
+	    
+	    // Element is smaller than current node's value -> Continue at
+	    // right.
+	    if(val < c.value) {
+		
+		System.out.println(" -> Smaller than"+c.value+ ": Going left%n");
+		
+		if(c.left == null) {
+		    c.setLeft(new Node(val));
+		    System.out.println(" -> Setting as left child of "+ c.value);
+		    up(c);
+		    return;
+		} else
+		    c = c.left;
+		
+		// Element is bigger than current node's value -> Continue
+		// at right.
+	    } else if(val > c.value) {
+		
+		System.out.println(" -> Bigger than "+ c.value+": Going right");
+		
+		if(c.right == null) {
+		    c.setRight(new Node(val));
+		    System.out.println(" -> Setting as right child of "+ c.value);
+		    up(c);
+		    return;
+		} else
+		    c = c.right;
+		
+		// Element is already included -> Exception.
+	    } else
+		throw new IllegalArgumentException("Already inserted.");
+	    
+	}
+	
+    }
+
+
+    /**
+     * Performs a rotation. Will only work correctly if rotation is
+    actually required.
+    * @param a The rotation anchor.
+    * @return The node's replacement node.
+    */
+    private Node rotate(Node a) {
+	
+	// Correct for right side overweight.
+	if (a.balance == 2)
+	    // Correct for right-left side overweight.
+	    if(a.right.balance == -1)
+		return rotateLeftDouble(a);
+         	// Correct for right-right side overweight.
+	    else //if(a.right.balance == 1 || /* delete only: */a.right.balance == 0)
+		return rotateLeft(a);
+    
+            // Correct for left side overweight
+	else //if(a.balance == -2)
+	    // Correct for left-right side overweight.
+	    if(a.left.balance == 1)
+		return rotateRightDouble(a);
+	    // Correct for left-left side overweight.
+	    else //if(a.left.balance == -1 || /* delete only: */ a.left.balance == 0)
+		    return rotateRight(a);
+    }
+
+    private Node rotateRight(Node a) {
+	
+	Node s = a.left;
+
+	System.out.println(" -> Right single rotation on elements a:"+a.value+ " s:"+s.value);
+	
+	if (a == root)
+	    s.setRoot();
+	else
+	    a.parent.replace(a, s);
+	
+	a.setLeft(s.right);
+	a.update();
+	
+	s.setRight(a);
+	s.update();
+	
+	return s;
+	
+    }
+
+    private Node rotateLeft(Node a) {
+	
+	Node s = a.right;
+
+	System.out.println(" -> Left single rotation on elements a:"+a.value+" s:"+ s.value);
+	
+	if (a == root)
+	    s.setRoot();
+	else
+	    a.parent.replace(a, s);
+	
+	a.setRight(s.left);
+	a.update();
+	
+	s.setLeft(a);
+	s.update();
+	
+	return s;
+	
+    }
+    
+    private Node rotateLeftDouble(Node a) {
+	
+	Node s = a.right;
+	Node b = s.left;
+
+	System.out.println(" -> Double left rotation on elements a:"+a.value+ " s: " +s.value+ " b: "+b.value);
+	
+	if (a == root)
+	    b.setRoot();
+	else
+	    a.parent.replace(a, b);
+
+	a.setRight(b.left);
+	a.update();
+	
+	s.setLeft(b.right);
+	s.update();
+	
+	b.setLeft(a);
+	b.setRight(s);
+	b.update();
+	
+	return b;
+	
+    }
+
+
+    private Node rotateRightDouble(Node a) {
+	
+	Node s = a.left;
+	Node b = s.right;
+	
+	System.out.println(" -> Double right rotation on elements a:"+a.value+ "s:" +s.value+  "b:" +b.value);
+	
+	if (a == root)
+	    b.setRoot();
+	else
+	    a.parent.replace(a, b);
+	
+	a.setLeft(b.right);
+	a.update();
+	
+	s.setRight(b.left);
+	s.update();
+	
+	b.setRight(a);
+	b.setLeft(s);
+	b.update();
+	
+	return b;
+	
+    }
+
+}
