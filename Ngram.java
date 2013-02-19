@@ -105,9 +105,9 @@
                         	if(nps[j].write == GRAM){
                                 	if(qp.compare(nps[j])){
 						out++;
-						System.out.println("Hurray! - Found a match with Title " + key.toString());
-						System.out.println("Matching : " + nps[j].toString());
-						System.out.println(line);
+//						System.out.println("Hurray! - Found a match with Title " + key.toString());
+//						System.out.println("Matching : " + nps[j].toString());
+//						System.out.println(line);
 					}
         	                }
                	 	}
