@@ -43,4 +43,11 @@ public class QueryProcessor {
 	
     }
 
+    public boolean compare(NgramPiece in){
+	for (NgramPiece np: pieces){
+		if(np.match(in)) return true;
+	}
+	return false;
+    } 
+
 }

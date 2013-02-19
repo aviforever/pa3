@@ -39,6 +39,15 @@
 		  //   fs = FileSystem.getLocal(new Configuration());
 	             	QueryFile = DistributedCache.getLocalCacheFiles(job);
    	            //fs.close();
+
+			// Query Processing
+	     	 	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
+			String str;
+			while((str = readBuffer.readLine()) != null){
+				query.append(str);			
+			}		
+			readBuffer.close();
+			qp = new QueryProcessor(query.toString(), GRAM);
 		 }catch(IOException ioe){
 		     //Handle exception here, most of the time you will just log it.
 		     System.out.println("FATAL: Could not read in mapper -" +  QueryFile.toString());
@@ -48,18 +57,11 @@
 	      	
 	      public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 
-	      	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
-		String str;
-		while((str = readBuffer.readLine()) != null){
-			query.append(str);			
-//	      	System.out.println("Parsing Query 1 " + str);
-		}		
-		readBuffer.close();
-		qp = new QueryProcessor(query.toString(), GRAM);
 
+	        IntWritable out_value = new IntWritable(0);
+	        int out = 0;
 	        String line = value.toString();
 		int SIZE = line.length();
-	        int i = 0, j = 0, k, l;
 
 //	         output.collect(key, one);
 
@@ -84,15 +86,43 @@
 //			}
 //		}
 
+		NgramPiece[] nps = new NgramPiece[GRAM];
+	        for(int i=0;i<GRAM;i++){
+        	        nps[i] = new NgramPiece(GRAM);
+	        }
 
 
+	        int i = 0, j = 0, k, l;
+		String token;
 	    //    String lineInPage = value.toString();
 	        Tokenizer tokenizer = new Tokenizer(line);
+	        while(tokenizer.hasNext()){
+        	        token = tokenizer.next();
+                	if(i==GRAM) i=0;
+	                for(j=0; j<GRAM; j++){
+        	                if(i==j) nps[i] = new NgramPiece(GRAM);
+                	        nps[j].addWord(token);
+                        	if(nps[j].write == GRAM){
+                                	if(qp.compare(nps[j])){
+						out++;
+						System.out.println("Hurray! - Found a match with Title " + key.toString());
+						System.out.println("Matching : " + nps[j].toString());
+						System.out.println(line);
+					}
+        	                }
+               	 	}
+	                i++;
+	        }
 
-		for(i=0; i<GRAM && tokenizer.hasNext(); i++){
-		  words[i] = new Text();	
-		  words[i].set(tokenizer.next());
-		}
+
+		out_value = new IntWritable(out);
+		output.collect(key, out_value);
+
+
+//		for(i=0; i<GRAM && tokenizer.hasNext(); i++){
+//		  words[i] = new Text();	
+//		  words[i].set(tokenizer.next());
+//		}
 
 //		if (i < GRAM) {
 //		    
