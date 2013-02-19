@@ -161,37 +161,29 @@
 //		}
 	      }
 	    }
-	    /*
-	    public static class Combine {
-	    //extends MapReduceBase implements Combiner<Text, NgramPerPage, Text, IntWritable> {
-		public void Combine(String key, Iterator<NgramPerPage>
+
+	    public static class Combine extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+		public void reduce(Text key, Iterator<IntWritable>
 				    values, OutputCollector<Text,
 				    IntWritable> output, Reporter
-				    reporter) {
+				    reporter) throws IOException {
 		    int sum = 0;
-		    StringBuilder nGram = new StringBuilder();
 		    while (values.hasNext()) {
-			sum += values.next.getCount();
-			//if (first == true) {
-			//    first = false;
-			//    nGram.append(values.next.nGram);
-			//}
+			sum += values.next().get();
 		    }
-		    //if (first == false)
-		    output.collect(key, sum);
-		}
+		    if (sum != 0)
+			output.collect(key, new IntWritable(sum));
 		}
 	    }
-	    */
+
 	    public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 	      public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
 	        int sum = 0;
 		
-                // TODO find biggest number of the iterator
-			while (values.hasNext()) {
-				sum += values.next().get();
-	        	}
-			 output.collect(key, new IntWritable(sum));
+		if (values.hasNext()) {
+		    sum = values.next().get();
+		    output.collect(key, new IntWritable(sum));
+	        }
 	      }
 	    }
 	
@@ -207,7 +199,7 @@
 	      conf.setOutputValueClass(IntWritable.class);
 	
 	      conf.setMapperClass(Map.class);
-	      //	      conf.setCombinerClass(Combine.class);
+	      conf.setCombinerClass(Combine.class);
 	      conf.setReducerClass(Reduce.class);
 	
 	      conf.setInputFormat(MyInputFormat.class);
