@@ -1,0 +1,11 @@
+import java.util.*;
+
+public static class NgramPerPage {
+    Text nGram;
+    IntWritable count;
+    NgramPerPage(Text nGram, IntWritable count) {
+	this.nGram = new Text();
+	this.nGram.set(nGram);
+	this.count = count;
+    }
+}
