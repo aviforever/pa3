@@ -7,7 +7,7 @@ pa3_home=/users/hkhaitan/pa3/git_ws/pa3
 cd $pa3_home
 
 #set env variables
-source local-hadoop/env-local-hadoop.bash
+#source local-hadoop/env-local-hadoop.bash
 HADOOP_HOME=/usr/local/hadoop-1.1.1
 
 # Clean up the directory
@@ -15,8 +15,8 @@ find . -name '*.class' -print0 | xargs -0 rm -f
 mkdir -p class_dir
 
 # Compile the program
-javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java NgramPerPage.java QueryProcessor.java NgramPiece.java
-jar -cvf ngram.jar -C class_dir/ .
+javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java NgramPerPage.java QueryProcessor.java NgramPiece.java AvlTree.java Node.java
+jar -cvf ngram.jar -C class_dir/ . 
 
 hadoop  fs -put query*.txt .
 hadoop  fs -rmr output/
