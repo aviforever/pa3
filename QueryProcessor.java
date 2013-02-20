@@ -12,7 +12,7 @@ import java.util.*;
 
 public class QueryProcessor {
 
-    private ArrayList<NgramPiece> pieces;
+    public ArrayList<NgramPiece> pieces;
 
     QueryProcessor(String Query, int GRAM) {
 	pieces = new ArrayList<NgramPiece>();

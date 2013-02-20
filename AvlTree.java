@@ -29,9 +29,9 @@ public class AvlTree {
 	Node next = a.parent;
 	int orgHeigth = a.height;
 	
-	System.out.println("Validating element:" +a.value+ "(balance/height:" +a.balance + a.height);
+	//System.out.println("Validating element:" +a.value+ "(balance/height:" +a.balance + a.height);
 	a.update();
-	System.out.println("bal :" + a.balance + "height"+ a.height);
+	//System.out.println("bal :" + a.balance + "height"+ a.height);
 	
 	// Check if tree node is out of balance.
 	if(Math.abs(a.balance) >= 2)
@@ -50,13 +50,13 @@ public class AvlTree {
      */
     public void add(int val, Text page) {
 	
-	System.out.println("Adding element:"+ val);
+	//System.out.println("Adding element:"+ val);
 	
 	// No root yet exists -> Insert as root and return.
 	if(this.root == null) {
 	    this.root = new Node(val, page);
 	    this.root.parent = null;
-	    System.out.println(" -> Setting as root.");
+	    //System.out.println(" -> Setting as root.");
 	    return;
 	}
 	
@@ -68,11 +68,11 @@ public class AvlTree {
 	    // right.
 	    if(val < c.value) {
 		
-		System.out.println(" -> Smaller than"+c.value+ ": Going left%n");
+		//System.out.println(" -> Smaller than"+c.value+ ": Going left%n");
 		
 		if(c.left == null) {
 		    c.setLeft(new Node(val, page));
-		    System.out.println(" -> Setting as left child of "+ c.value);
+		    //System.out.println(" -> Setting as left child of "+ c.value);
 		    up(c);
 		    return;
 		} else
@@ -82,11 +82,11 @@ public class AvlTree {
 		// at right.
 	    } else if(val > c.value) {
 		
-		System.out.println(" -> Bigger than "+ c.value+": Going right");
+		//System.out.println(" -> Bigger than "+ c.value+": Going right");
 		
 		if(c.right == null) {
 		    c.setRight(new Node(val, page));
-		    System.out.println(" -> Setting as right child of "+ c.value);
+		    //System.out.println(" -> Setting as right child of "+ c.value);
 		    up(c);
 		    return;
 		} else
@@ -116,7 +116,7 @@ public class AvlTree {
 	    if(a.right.balance == -1)
 		return rotateLeftDouble(a);
          	// Correct for right-right side overweight.
-	    else //if(a.right.balance == 1 || /* delete only: */a.right.balance == 0)
+	    else 
 		return rotateLeft(a);
     
             // Correct for left side overweight
@@ -125,15 +125,15 @@ public class AvlTree {
 	    if(a.left.balance == 1)
 		return rotateRightDouble(a);
 	    // Correct for left-left side overweight.
-	    else //if(a.left.balance == -1 || /* delete only: */ a.left.balance == 0)
-		    return rotateRight(a);
+	    else 
+		return rotateRight(a);
     }
 
     public Node rotateRight(Node a) {
 	
 	Node s = a.left;
 
-	System.out.println(" -> Right single rotation on elements a:"+a.value+ " s:"+s.value);
+	//System.out.println(" -> Right single rotation on elements a:"+a.value+ " s:"+s.value);
 	
 	if (a == root) {
 	    root = s;
@@ -156,7 +156,7 @@ public class AvlTree {
 	
 	Node s = a.right;
 
-	System.out.println(" -> Left single rotation on elements a:"+a.value+" s:"+ s.value);
+	//System.out.println(" -> Left single rotation on elements a:"+a.value+" s:"+ s.value);
 	
 	if (a == root) {
 	    root = s;
@@ -180,7 +180,7 @@ public class AvlTree {
 	Node s = a.right;
 	Node b = s.left;
 
-	System.out.println(" -> Double left rotation on elements a:"+a.value+ " s: " +s.value+ " b: "+b.value);
+	//System.out.println(" -> Double left rotation on elements a:"+a.value+ " s: " +s.value+ " b: "+b.value);
 	
 	if (a == root) {
 	    root = b;
@@ -209,7 +209,7 @@ public class AvlTree {
 	Node s = a.left;
 	Node b = s.right;
 	
-	System.out.println(" -> Double right rotation on elements a:"+a.value+ "s:" +s.value+  "b:" +b.value);
+	//System.out.println(" -> Double right rotation on elements a:"+a.value+ "s:" +s.value+  "b:" +b.value);
 	
 	if (a == root) {
 	    root = b;

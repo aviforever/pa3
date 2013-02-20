@@ -1,12 +1,12 @@
 ########### UPDATE THESE VARIABLES ###############
 # the directory where your files are
-pa3_home=/users/hkhaitan/pa3/git_ws/pa3
+pa3_home=$HOME/assignments/pa3/
 ##################################################
 
 ######### ADD YOUR EXECUTION SCRIPT HERE #########
 cd $pa3_home
 
-#set env variables
+
 #source local-hadoop/env-local-hadoop.bash
 HADOOP_HOME=/usr/local/hadoop-1.1.1
 
@@ -16,11 +16,13 @@ mkdir -p class_dir
 
 # Compile the program
 javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java NgramPerPage.java QueryProcessor.java NgramPiece.java AvlTree.java Node.java
+
 jar -cvf ngram.jar -C class_dir/ . 
 
-hadoop  fs -put query*.txt .
+hadoop  fs -put query1.txt query1.txt
+hadoop  fs -put query2.txt query2.txt
 hadoop  fs -rmr output/
-hadoop  jar ngram.jar Ngram 4 query1.txt /wikipedia/all output/
+hadoop  jar ngram.jar Ngram 4 query2.txt /wikipedia/2gb output/
 rm -rf output/
 hadoop  fs -get output .
 cat output/*

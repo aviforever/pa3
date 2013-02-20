@@ -14,33 +14,38 @@
 
 	public class Ngram {
 
-	    private static int GRAM;
+	    //	    private static int GRAM;
 	    static AvlTree   tree = new AvlTree();
 	
-	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, IntWritable> {
-	      private final static IntWritable one = new IntWritable(1);
-	      private Text titleX = new Text();
-	      private StringBuilder title = new StringBuilder();
-	      private Text word = new Text();
-	      private Text[] words = new Text[GRAM];
+	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
+		//	      private final static IntWritable one = new IntWritable(1);
+	      //	      private Text titleX = new Text();
+	      //	      private StringBuilder title = new StringBuilder();
+	      //	      private Text word = new Text();
+	      //	      private Text[] words = new Text[GRAM];
 	      private QueryProcessor qp; 
 	
 //	      private FileSystem fs;
 	      private Path[] QueryFile;
+	      private static int GRAM;
 	      private StringBuilder query = new StringBuilder();
-              private BufferedReader readBuffer;
+	      private BufferedReader readBuffer;
 
 	      //  Not needed. 
-	      private boolean isTitle = false;
+	      //	      private boolean isTitle = false;
 	      	
 	      public void configure(JobConf job) {
+
+
+		
         	 // Get the cached archives/files
 	 	 try{
+		     GRAM = Integer.parseInt(job.get("gram"));
 		     //All your IO Operations
 		  //   fs = FileSystem.getLocal(new Configuration());
-	             	QueryFile = DistributedCache.getLocalCacheFiles(job);
+		     	             	QueryFile = DistributedCache.getLocalCacheFiles(job);
    	            //fs.close();
-
+	
 			// Query Processing
 	     	 	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
 			String str;
@@ -49,20 +54,38 @@
 			}		
 			readBuffer.close();
 			qp = new QueryProcessor(query.toString(), GRAM);
-		 }catch(IOException ioe){
+		       
+		 } catch(IOException ioe){
 		     //Handle exception here, most of the time you will just log it.
 		     System.out.println("FATAL: Could not read in mapper -" +  QueryFile.toString());
-		 }
+		     }
 	      }
 
 	      	
-	      public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+	      public void map(Text key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
 
-	        IntWritable out_value = new IntWritable(0);
+		  //	        IntWritable out_value = new IntWritable(0);
 	        int out = 0;
 	        String line = value.toString();
 		int SIZE = line.length();
+
+		     //All your IO Operations
+		  //   fs = FileSystem.getLocal(new Configuration());
+		     //	             	QueryFile = DistributedCache.getLocalCacheFiles(job);
+   	            //fs.close();
+
+			// Query Processing
+		//	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
+		//	String str;
+		//	while((str = readBuffer.readLine()) != null){
+		//		query.append(str);			
+		//	}		
+		//	readBuffer.close();
+		//	qp = new QueryProcessor(query.toString(), GRAM);
+
+
+
 
 //	         output.collect(key, one);
 
@@ -115,10 +138,18 @@
 	                i++;
 	        }
 
+		if (out != 0) {
+		    StringBuilder titleScore = new StringBuilder();
+		    Text values = new Text();
+		    Text all    = new Text();
+		    titleScore.append(key+" #");
+		    titleScore.append(Integer.toString(out));
+		    values.set(titleScore.toString());
+		    all.set("one");
+	       	    output.collect(all, values);
+		}
 
-		out_value = new IntWritable(out);
-		output.collect(key, out_value);
-
+		//                reporter.setStatus("$$$$Query Processor = " +qp.pieces.size());
 
 //		for(i=0; i<GRAM && tokenizer.hasNext(); i++){
 //		  words[i] = new Text();	
@@ -162,11 +193,10 @@
 //		}
 	      }
 	    }
-
+	    /*
 	    public static class Combine extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 		public void reduce(Text key, Iterator<IntWritable>
-				    values, OutputCollector<Text,
-				    IntWritable> output, Reporter
+				   values, OutputCollector<Text, IntWritable> output, Reporter
 				    reporter) throws IOException {
 		    int sum = 0;
 		    while (values.hasNext()) {
@@ -176,9 +206,36 @@
 			output.collect(key, new IntWritable(sum));
 		}
 	    }
+	    */
 
-	    public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
-	      public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+	    public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+		    int maxScore = -1;
+		    int scorePos = 0;
+		    int score =0;
+		    String title = " ";
+		    String titleScore;
+		    Text highScoreTitle = new Text();
+		    Text highScore = new Text();
+		    
+		    while (values.hasNext()) {
+			titleScore = values.next().toString();
+			scorePos = titleScore.indexOf("#");
+			score = Integer.parseInt(titleScore.substring(scorePos+1));
+
+			if (score > maxScore) {
+			    maxScore = score;
+     			    title = titleScore.substring(0, scorePos);
+			}
+		    }
+		    highScoreTitle.set(title);
+		    highScore.set(Integer.toString(maxScore));
+		    output.collect(highScore, highScoreTitle);
+			
+			
+
+		  
+		    /*
 
 		if (values.hasNext()) {
                     tree.add(values.next().get(), key);
@@ -186,23 +243,31 @@
 		Node node = tree.findMax();
 		System.out.println(node.page.toString()+ "score:="+node.value);
 		output.collect(node.page, new IntWritable(node.value));
-
+		    */
 	      }
 	    }
 	
 	    public static void main(String[] args) throws Exception {
-	      
-	      GRAM = Integer.parseInt(args[0]);
+
+		//readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
+		//	      GRAM = Integer.parseInt(args[0]);
 
 	      JobConf conf = new JobConf(Ngram.class);
+	      //	      Configuration config = new Configuration();
+	      //	      Path inFile = new Path(args[1]);
+	      //	      FSDataInputStream in = fs.open(inFile); 
+	      
+
+	      conf.set("gram", args[0]);
+	      //	      config.set(
 	      conf.setJobName("wordcount");
 	
 	      conf.setOutputKeyClass(Text.class);
 	     // conf.setOutputValueClass(NgramPerPage.class);
-	      conf.setOutputValueClass(IntWritable.class);
+	      conf.setOutputValueClass(Text.class);
 	
 	      conf.setMapperClass(Map.class);
-	      conf.setCombinerClass(Combine.class);
+	      //	      conf.setCombinerClass(Combine.class);
 	      conf.setReducerClass(Reduce.class);
 	      conf.setNumReduceTasks(1);
 	
