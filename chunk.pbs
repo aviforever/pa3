@@ -1,6 +1,6 @@
 ########### UPDATE THESE VARIABLES ###############
 # the directory where your files are
-pa3_home=$HOME/assignments/pa3/
+pa3_home=$HOME/assignments/new_pa3/pa3/
 ##################################################
 
 ######### ADD YOUR EXECUTION SCRIPT HERE #########

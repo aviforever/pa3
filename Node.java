@@ -22,16 +22,15 @@ import org.apache.hadoop.filecache.*;
      * The value of this node.
      */
      final int value;
-     final Text page;
+     String page;
     
     /**
      * The balance and height of this node.
      */
     public  int balance, height = 1;
-    Node(int val, Text page) {
+    Node(int val, String page) {
 	this.value = val;
-	this.page = new Text();
-	this.page.set(page);
+	this.page = new String(page);
     }
     
     /**

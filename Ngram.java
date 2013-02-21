@@ -226,17 +226,87 @@
 			if (score > maxScore) {
 			    maxScore = score;
      			    title = titleScore.substring(0, scorePos);
+                            tree.add(maxScore, title);
 			}else if (score == maxScore){
 			   String temp = titleScore.substring(0, scorePos);
 			   if(temp.compareTo(title) > 0){
 				title = temp;
+				tree.findAndUpdate(maxScore, title);
 			   } 
 			}
 		    }
 		    highScoreTitle.set(title);
 		    highScore.set(Integer.toString(maxScore));
 		    output.collect(highScore, highScoreTitle);
-			
+
+		    ArrayList<Node> list = new ArrayList<Node>();
+		    Node cur = tree.root;
+		    int maxElements = tree.numTitles;
+		    System.out.println("numElements is = "+tree.numTitles);
+		    while (cur.right != null) {
+			cur = cur.right;
+		    }
+		    System.out.println("Found last right node->" +cur);
+		    if (tree.numTitles > 20)
+			maxElements = 20;
+		    while(list.size() < maxElements) {
+			if (list.contains(cur) == false) {
+			    System.out.println("list doesnt contain" +cur);
+				    
+			    list.add(cur);
+			    if (cur.left != null)
+				cur = cur.left;
+			    else if (cur.right != null)
+				cur = cur.right;
+			    else
+				cur = cur.parent;
+			}
+			else {
+			    System.out.println("list contains" +cur);
+			    if (cur.right != null) {
+				if (list.contains(cur.right) == true) {
+				    System.out.println("list contain right moving to parent" +cur);
+				    cur = cur.parent;
+				}
+				else {
+				    System.out.println("list doesn't contain right" +cur.right);
+				    cur = cur.right;
+				}
+			    }
+			    else if (cur.left != null) {
+				if (list.contains(cur.left) == true) {
+				    System.out.println("list contains left moving to parent" +cur);
+				    cur = cur.parent;
+				}
+				else {
+				    System.out.println("list doesnt contain left" +cur.left);
+				    cur = cur.left;
+				}
+			    }
+			    else {
+				System.out.println("moving to parent");
+				cur = cur.parent;
+			    }
+			}
+			if (cur.parent == null && cur.left != null) {
+			    System.out.println("cur-> parent is null->" + cur);
+			    if (list.contains(cur) == false)
+				list.add(cur);
+			    cur = cur.left;
+			}
+			System.out.println("list.size is ->" +list.size());
+		    }
+
+		    Iterator iter = list.iterator();
+		    while (iter.hasNext()) {
+			Text page = new Text();
+			Text pageScore = new Text();
+			Node node = (Node)iter.next();
+			pageScore.set(Integer.toString(node.value));
+			page.set(node.page);
+			output.collect(pageScore, page);
+		    }
+
 			
 
 		  

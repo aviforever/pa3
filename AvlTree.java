@@ -13,9 +13,11 @@ import org.apache.hadoop.filecache.*;
 public class AvlTree {
 
     Node root;
+    int  numTitles;
     
     AvlTree () {
 	root = null;
+	numTitles = 0;
     }
     /**
      * Walks up from the most recent deleted item to the tree root in
@@ -48,7 +50,7 @@ public class AvlTree {
      * Adds a new value to this tree.
      * @param val The new value.
      */
-    public void add(int val, Text page) {
+    public void add(int val, String page) {
 	
 	//System.out.println("Adding element:"+ val);
 	
@@ -56,6 +58,7 @@ public class AvlTree {
 	if(this.root == null) {
 	    this.root = new Node(val, page);
 	    this.root.parent = null;
+	    numTitles++;
 	    //System.out.println(" -> Setting as root.");
 	    return;
 	}
@@ -72,6 +75,7 @@ public class AvlTree {
 		
 		if(c.left == null) {
 		    c.setLeft(new Node(val, page));
+		    numTitles++;
 		    //System.out.println(" -> Setting as left child of "+ c.value);
 		    up(c);
 		    return;
@@ -86,6 +90,7 @@ public class AvlTree {
 		
 		if(c.right == null) {
 		    c.setRight(new Node(val, page));
+		    numTitles++;
 		    //System.out.println(" -> Setting as right child of "+ c.value);
 		    up(c);
 		    return;
@@ -231,6 +236,23 @@ public class AvlTree {
 	return b;
 	
     }
+    public void findAndUpdate(int maxScore, String title)
+    {
+	Node cur = root;
+	if (root == null)
+	    return;
+	while(cur != null) {
+	    if (maxScore < cur.value)
+		cur = cur.left;
+	    else if (maxScore > cur.value)
+		cur = cur.right;
+	    else {
+		cur.page = new String(title);
+		return;
+	    }
+	}
+    }
+
     public  Node findMax(  )
     {
 	Node t;
@@ -241,5 +263,4 @@ public class AvlTree {
 	    t = t.right;
 	return t;
     }
-
 }
