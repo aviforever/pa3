@@ -60,7 +60,7 @@ class MyRecordReader implements RecordReader<Text, Text> {
 		value.set(content.toString());
 		return true;
 	}else{
-		content.append(lineValue.toString());
+		content.append(" " + lineValue.toString());
 	}
     }	
     	

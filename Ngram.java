@@ -50,7 +50,7 @@
 	     	 	readBuffer = new BufferedReader(new FileReader(QueryFile[0].toString()));
 			String str;
 			while((str = readBuffer.readLine()) != null){
-				query.append(str);			
+				query.append(" " + str);			
 			}		
 			readBuffer.close();
 			qp = new QueryProcessor(query.toString(), GRAM);
