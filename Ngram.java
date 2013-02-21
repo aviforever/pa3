@@ -226,6 +226,11 @@
 			if (score > maxScore) {
 			    maxScore = score;
      			    title = titleScore.substring(0, scorePos);
+			}else if (score == maxScore){
+			   String temp = titleScore.substring(0, scorePos);
+			   if(temp.compareTo(title) > 0){
+				title = temp;
+			   } 
 			}
 		    }
 		    highScoreTitle.set(title);
