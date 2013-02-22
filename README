@@ -35,3 +35,7 @@ Highest 20 Scores and Pages are emitted
 We have one Reduce task which receive Key as "one" and Value as "Title#score" iterator. 
 The reduce task spans through iterator and extracts Score and corresponding title and puts in
 to array list which holds top 20 Score and their title.
+
+--------
+How to run?
+Use pa3.pbs as a starting point.

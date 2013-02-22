@@ -1,6 +1,6 @@
 ########### UPDATE THESE VARIABLES ###############
 # the directory where your files are
-pa3_home=$HOME/assignments/new_pa3/pa3/
+pa3_home=$HOME/1_pa3_git/pa3
 ##################################################
 
 ######### ADD YOUR EXECUTION SCRIPT HERE #########
@@ -15,7 +15,7 @@ find . -name '*.class' -print0 | xargs -0 rm -f
 mkdir -p class_dir
 
 # Compile the program
-javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java NgramPerPage.java QueryProcessor.java NgramPiece.java AvlTree.java Node.java
+javac -classpath ${HADOOP_HOME}/hadoop-core-1.1.1.jar -d class_dir Tokenizer.java MyRecordReader.java MyInputFormat.java  Ngram.java QueryProcessor.java NgramPiece.java Node.java
 
 jar -cvf ngram.jar -C class_dir/ . 
 
