@@ -1,0 +1,37 @@
+**************************************************************************************
+PA3  Implementation
+**************************************************************************************
+THIS IS A GROUP SUBMISSION:
+**************************************************************************************
+Harshit Khaitan : hkhaitan@stanford.edu
+Avinash Parthasarathy : avinash1@stanford.edu
+**************************************************************************************
+
+The initial configuration for Hadoop Map/Reduce is set up in main routine.
+The N-gram value N is passed from main to each Mapper through JobConf using Set/Get.
+The Query file is passed into distributed cache and read in configure part of mapper and
+populates QueryProcessor. The QueryProcessor Class stores array list of all possible 
+Ngrams of Query file. Each entry of QueryProcessor is NgramPiece.
+NgramPiece class holds N-words which represents NGRAM. The QueryProcessor holds array of
+NgramPiece. The configure part of each Mapper task Reads Query file and builds Query processor.
+MyRecordReader implements RecordReader and parses Input file looks for Title string and
+extracts title name and passes Title as Key and Contents of Title page to each Map task.
+--------------------------------------------------
+MAP:
+Input : Key<Text>=Title Value<Text>=Title Contents
+Output: Key<Text>="one" Value<Text>="Title#Score"
+---------------------------------------------------
+Each map task works on Title and its contents to matche with QueryProcessor. The contents of page is parsed and Ngram is built and compared with QueryProcessor Array list. For each Ngram 
+match from Page contents to QueryProcessor, score is incremented for the page. 
+The Page with zero score is discarded. The Title of the page and its score is concatenated 
+with # as delimiter and emitted with Key string "one" so that all Title and score of input 
+file is grouped under Key "one" so that Reduce is applied on iterator.
+---------------------------------------------------------
+REDUCE:
+Input : Key<Text>="one" Value<Text-Iterator>="Title#Score"
+Output: Key<Text>=Score Value<Text>="Title"
+Highest 20 Scores and Pages are emitted
+----------------------------------------------------------
+We have one Reduce task which receive Key as "one" and Value as "Title#score" iterator. 
+The reduce task spans through iterator and extracts Score and corresponding title and puts in
+to array list which holds top 20 Score and their title.
