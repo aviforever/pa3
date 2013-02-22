@@ -99,6 +99,26 @@ public class AvlTree {
 		
 	    } else {
 		//System.out.println("Already Inserted");
+		if (page.compareTo(c.page) < 0){
+			         if(c.left == null) {
+		                	 c.setLeft(new Node(val, page));
+                		 	numTitles++;
+                    //System.out.println(" -> Setting as left child of "+ c.value);
+                   			 up(c);
+                   			 return;
+                		} else
+                   			 c = c.left;
+
+		}else{
+				if(c.right == null) {
+				    c.setRight(new Node(val, page));
+				    numTitles++;
+				    //System.out.println(" -> Setting as right child of "+ c.value);
+				    up(c);
+				    return;
+				} else
+		  		  c = c.right;
+		}
 		return ;
 	    }
 	    
@@ -245,6 +265,8 @@ public class AvlTree {
 	    if (maxScore < cur.value)
 		cur = cur.left;
 	    else if (maxScore > cur.value)
+		cur = cur.right;
+	    else if (maxScore == cur.value)
 		cur = cur.right;
 	    else {
 		cur.page = new String(title);

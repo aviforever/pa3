@@ -15,7 +15,6 @@
 	public class Ngram {
 
 	    //	    private static int GRAM;
-	    static AvlTree   tree = new AvlTree();
 	
 	    public static class Map extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
 		//	      private final static IntWritable one = new IntWritable(1);
@@ -211,33 +210,37 @@
 	    public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 		    int maxScore = -1;
+		    int threshold = 0;
 		    int scorePos = 0;
 		    int score =0;
 		    String title = " ";
 		    String titleScore;
 		    Text highScoreTitle = new Text();
 		    Text highScore = new Text();
+		    AvlTree tree = new AvlTree();
 		    
 		    while (values.hasNext()) {
 			titleScore = values.next().toString();
 			scorePos = titleScore.indexOf("#");
 			score = Integer.parseInt(titleScore.substring(scorePos+1));
 
-			if (score > maxScore) {
-			    maxScore = score;
      			    title = titleScore.substring(0, scorePos);
-                            tree.add(maxScore, title);
-			}else if (score == maxScore){
-			   String temp = titleScore.substring(0, scorePos);
-			   if(temp.compareTo(title) > 0){
-				title = temp;
-				tree.findAndUpdate(maxScore, title);
-			   } 
-			}
+                            tree.add(score, title);
+//			if (score > maxScore) {
+//			    maxScore = score;
+//     			    title = titleScore.substring(0, scorePos);
+//                            tree.add(maxScore, title);
+//			}else if (score == maxScore){
+//			   String temp = titleScore.substring(0, scorePos);
+//			   if(temp.compareTo(title) > 0){
+//				title = temp;
+//				tree.findAndUpdate(maxScore, title);
+//			   } 
+//			}
 		    }
 		    highScoreTitle.set(title);
 		    highScore.set(Integer.toString(maxScore));
-		    output.collect(highScore, highScoreTitle);
+//		    output.collect(highScore, highScoreTitle);
 
 		    ArrayList<Node> list = new ArrayList<Node>();
 		    Node cur = tree.root;
